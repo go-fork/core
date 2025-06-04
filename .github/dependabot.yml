@@ -24,7 +24,7 @@ updates:
         patterns:
           - "go.fork.vn/config"
           - "go.fork.vn/di"
-          - "go.fork.vn/redis"
+          - "go.fork.vn/log"
     allow:
       # Only allow updates for direct dependencies
       - dependency-type: "direct"

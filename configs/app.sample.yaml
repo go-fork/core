@@ -1,0 +1,504 @@
+# ============================================================================
+# FORK ECOSYSTEM - COMPREHENSIVE CONFIGURATION SAMPLE
+# ============================================================================
+# 
+# File cấu hình tổng hợp cho toàn bộ hệ sinh thái fork.vn
+# Bao gồm tất cả các thành phần và middleware có sẵn trong ecosystem
+# 
+# Sử dụng: Sao chép và tùy chỉnh các section cần thiết cho dự án của bạn
+# Version: 0.1.0
+# Last Updated: 2024-12-19
+# ============================================================================
+
+# ============================================================================
+# APPLICATION CORE CONFIGURATION
+# ============================================================================
+app:
+  name: "Fork Application"
+  version: "1.0.0"
+  environment: "development"  # development, production, testing
+  debug: true
+  timezone: "Asia/Ho_Chi_Minh"
+
+# ============================================================================
+# HTTP SERVER CONFIGURATION
+# ============================================================================
+http:
+  # Cấu hình server cơ bản
+  host: "localhost"
+  port: 8080
+  adapter: "http"  # http, fasthttp, http2, quic
+  debug: true
+  
+  # Cấu hình bảo mật và hiệu suất
+  max_request_body_size: 10485760    # 10MB - Giới hạn kích thước request body (bytes)
+  request_timeout: 30                # Thời gian timeout cho mỗi request (seconds)
+  enable_security_headers: true      # Bật/tắt các security headers tự động
+  
+  # Danh sách các HTTP methods được phép
+  allowed_methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]
+  
+  # Cấu hình graceful shutdown
+  graceful_shutdown:
+    enabled: true
+    timeout: 30
+    wait_for_connections: true
+    signal_buffer_size: 1
+
+  # ============================================================================
+  # HTTP MIDDLEWARE CONFIGURATION
+  # ============================================================================
+  middleware:
+    # CORS (Cross-Origin Resource Sharing)
+    cors:
+      enabled: true
+      allow_origins: ["*"]  # Development only - use specific domains in production
+      allow_methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"]
+      allow_headers: ["*"]
+      expose_headers: []
+      allow_credentials: false
+      max_age: 86400
+      allow_private_network: false
+
+    # HTTP Request Logger
+    logger:
+      enabled: true
+      use_log_manager: true
+      logger_name: "http.middleware.logger"
+      min_level: "info"
+      format: "${time} | ${status} | ${latency} | ${ip} | ${method} ${path}"
+      time_format: "2006/01/02 - 15:04:05"
+      
+      handlers:
+        console:
+          enabled: true
+          colored: true
+        file:
+          enabled: true
+          path: "./logs/http-access.log"
+          max_size: 10485760  # 10MB
+      
+      status_level_mapping:
+        200: "info"
+        201: "info"
+        204: "info"
+        300: "info"
+        400: "warning"
+        401: "warning"
+        403: "warning"
+        404: "warning"
+        500: "error"
+
+    # Request Rate Limiter
+    limiter:
+      enabled: true
+      max_requests: 100
+      expiration: 60  # seconds
+      key_generator: "ip"  # ip, header, custom
+      skip_failed_requests: true
+      skip_successful_requests: false
+      message: "Too many requests"
+
+    # Request Timeout
+    timeout:
+      enabled: true
+      timeout: 30  # seconds
+      error_message: "Request timeout"
+
+    # CSRF Protection
+    csrf:
+      enabled: true
+      key_lookup: "header:X-CSRF-Token"
+      cookie_name: "_csrf"
+      cookie_same_site: "Strict"
+      cookie_http_only: true
+      cookie_secure: false  # Set to true in production with HTTPS
+      expiration: 3600  # seconds
+
+    # Request ID Generator
+    requestid:
+      enabled: true
+      header: "X-Request-ID"
+      context_key: "request_id"
+      generator: "uuid"  # uuid, nano, custom
+
+    # Health Check Endpoint
+    healthcheck:
+      enabled: true
+      path: "/health"
+      check_timeout: 10  # seconds
+      
+    # Recovery from panics
+    recover:
+      enabled: true
+      enable_stack_trace: true
+      stack_trace_handler: "console"  # console, file, custom
+
+    # ETag Support
+    etag:
+      enabled: true
+      weak: false
+
+    # Response Compression
+    compression:
+      enabled: true
+      level: 6  # 1-9, higher = better compression but slower
+      types: ["text/html", "text/css", "text/javascript", "application/json"]
+
+    # Security Headers (Helmet)
+    helmet:
+      enabled: true
+      content_security_policy: "default-src 'self'"
+      x_frame_options: "DENY"
+      x_content_type_options: "nosniff"
+      x_xss_protection: "1; mode=block"
+      strict_transport_security: "max-age=31536000; includeSubDomains"
+
+    # Static File Serving
+    static:
+      enabled: true
+      root: "./public"
+      index: ["index.html"]
+      browse: false
+      max_age: 86400  # seconds
+
+    # Basic Authentication
+    basicauth:
+      enabled: false
+      username: "admin"
+      password: "secret"
+      realm: "Restricted Area"
+
+    # Key Authentication
+    keyauth:
+      enabled: false
+      key_lookup: "header:Authorization"
+      auth_scheme: "Bearer"
+      validator: "custom"  # custom, redis, database
+
+    # Session Management
+    session:
+      enabled: true
+      storage: "memory"  # memory, redis, file, cookie
+      key: "session_id"
+      expiration: 3600  # seconds
+      cookie_http_only: true
+      cookie_secure: false  # Set to true in production with HTTPS
+
+  # ============================================================================
+  # TEMPLATES CONFIGURATION
+  # ============================================================================
+  templates:
+    enabled: true
+    templates_dir: "./templates"
+    extension: ".html"
+    layouts_dir: "./templates/layouts"
+    partials_dir: "./templates/partials"
+    default_layout: "main"
+    
+    # Template engine configuration
+    engine: "html/template"  # html/template, pongo2, handlebars
+    auto_reload: true        # Auto reload templates in development
+    cache_enabled: false     # Cache compiled templates (enable in production)
+    
+    # Global template functions
+    functions:
+      - "url"
+      - "asset"
+      - "csrf_token"
+      - "auth_user"
+
+# ============================================================================
+# LOGGING CONFIGURATION
+# ============================================================================
+log:
+  level: "info"  # debug, info, warning, error, fatal
+  
+  console:
+    enabled: true
+    colored: true
+  
+  file:
+    enabled: true
+    path: "storage/logs/app.log"
+    max_size: 10485760  # 10MB in bytes (0 for unlimited)
+  
+  stack:
+    enabled: true
+    handlers:
+      console: true
+      file: true
+
+# ============================================================================
+# CACHE CONFIGURATION
+# ============================================================================
+cache:
+  default_driver: "memory"  # memory, file, redis, mongodb
+  default_ttl: 3600         # 1 hour in seconds
+  prefix: "cache:"
+  
+  drivers:
+    memory:
+      enabled: true
+      default_ttl: 3600
+      cleanup_interval: 600
+      max_items: 10000
+      
+    file:
+      enabled: true
+      path: "./storage/cache"
+      default_ttl: 3600
+      extension: ".cache"
+      cleanup_interval: 600
+      
+    redis:
+      enabled: true
+      default_ttl: 3600
+      serializer: "json"  # json, gob, msgpack
+        
+    mongodb:
+      enabled: true
+      database: "cache_db"
+      collection: "cache_items"
+      default_ttl: 3600
+
+# ============================================================================
+# REDIS CONFIGURATION
+# ============================================================================
+redis:
+  # Standard client configuration
+  client:
+    enabled: true
+    host: "localhost"
+    port: 6379
+    password: ""
+    db: 0
+    prefix: "app:"
+    timeout: 5
+    dial_timeout: 5
+    read_timeout: 3
+    write_timeout: 3
+    pool_size: 10
+    min_idle_conns: 5
+  
+  # Universal client (cluster/sentinel/standalone)
+  universal:
+    enabled: false
+    addresses: ["localhost:6379"]
+    password: ""
+    db: 0
+    prefix: "app:"
+    timeout: 5
+    dial_timeout: 5
+    read_timeout: 3
+    write_timeout: 3
+    max_retries: 3
+    min_retry_backoff: 8
+    max_retry_backoff: 512
+    pool_size: 10
+    min_idle_conns: 5
+    cluster_mode: false
+    max_redirects: 3
+    sentinel_mode: false
+    master_name: "mymaster"
+
+# ============================================================================
+# MONGODB CONFIGURATION
+# ============================================================================
+mongodb:
+  uri: "mongodb://localhost:27017"
+  database: "myapp"
+  app_name: "my-golang-app"
+  
+  # Connection pool settings
+  max_pool_size: 100
+  min_pool_size: 5
+  max_connecting: 10
+  max_conn_idle_time: 600000
+  
+  # Timeout settings (milliseconds)
+  connect_timeout: 30000
+  server_selection_timeout: 30000
+  socket_timeout: 0
+  heartbeat_interval: 10000
+  local_threshold: 15000
+  timeout: 30000
+  
+  # TLS/SSL configuration
+  tls:
+    enabled: false
+    insecure_skip_verify: false
+    ca_file: ""
+    cert_file: ""
+    key_file: ""
+    
+  # Authentication
+  auth:
+    username: ""
+    password: ""
+    auth_source: "admin"
+    auth_mechanism: "SCRAM-SHA-256"
+
+# ============================================================================
+# QUEUE CONFIGURATION
+# ============================================================================
+queue:
+  adapter:
+    default: "memory"  # memory, redis
+    
+    memory:
+      prefix: "queue:"
+      
+    redis:
+      prefix: "queue:"
+      provider_key: "default"
+  
+  server:
+    concurrency: 10
+    pollingInterval: 1000
+    defaultQueue: "default"
+    strictPriority: true
+    queues: ["critical", "high", "default", "low"]
+    shutdownTimeout: 30
+    logLevel: 1  # 0=debug, 1=info, 2=warning, 3=error, 4=fatal
+
+# ============================================================================
+# SCHEDULER CONFIGURATION
+# ============================================================================
+scheduler:
+  auto_start: true
+  
+  distributed_lock:
+    enabled: false
+  
+  options:
+    key_prefix: "scheduler_lock:"
+    lock_duration: 30
+    max_retries: 3
+    retry_delay: 100
+
+# ============================================================================
+# MAILER CONFIGURATION
+# ============================================================================
+mailer:
+  smtp:
+    host: "smtp.example.com"
+    port: 587
+    username: "your-email@example.com"
+    password: "your-password"
+    encryption: "tls"  # tls, ssl, none
+    from_address: "no-reply@example.com"
+    from_name: "System Notification"
+    timeout: 10
+  
+  queue:
+    enabled: false
+    adapter: "redis"  # memory, redis
+    name: "mailer"
+    delay_timeout: 60
+    fail_fast: false
+    track_status: true
+    max_retries: 3
+    retry_delay: 60
+
+# ============================================================================
+# TWO-FACTOR AUTHENTICATION CONFIGURATION
+# ============================================================================
+twofactor:
+  # TOTP (Time-based One-Time Password) configuration
+  totp:
+    enabled: true
+    issuer: "Go-Fork App"
+    secret_length: 32
+    period: 30        # seconds
+    skew: 1          # allow 1 period skew
+    digits: 6        # 6 or 8 digits
+    algorithm: "SHA1" # SHA1, SHA256, SHA512
+  
+  # Backup codes configuration
+  backup_codes:
+    enabled: true
+    count: 8         # number of backup codes to generate
+    length: 8        # length of each backup code
+    
+  # Recovery configuration
+  recovery:
+    enabled: true
+    code_length: 16
+    expiration: 3600 # seconds (1 hour)
+
+# ============================================================================
+# LOCALIZATION CONFIGURATION
+# ============================================================================
+locales:
+  default_locale: "vi"
+  fallback_locale: "en"
+  
+  # Supported locales
+  supported_locales: ["vi", "en", "ja", "ko", "zh"]
+  
+  # Translation files configuration
+  files:
+    directory: "./locales"
+    format: "json"  # json, yaml, toml
+    
+  # Auto-detection settings
+  detection:
+    from_header: true      # Accept-Language header
+    from_query: true       # ?lang=vi
+    from_cookie: true      # locale cookie
+    from_session: true     # session locale
+    
+    query_key: "lang"
+    cookie_name: "locale"
+    session_key: "locale"
+
+# ============================================================================
+# ENVIRONMENT-SPECIFIC OVERRIDES
+# ============================================================================
+
+# Development Environment
+development:
+  app:
+    debug: true
+  log:
+    level: "debug"
+  cache:
+    default_driver: "memory"
+  http:
+    debug: true
+
+# Production Environment  
+production:
+  app:
+    debug: false
+  log:
+    level: "info"
+    console:
+      enabled: false
+  cache:
+    default_driver: "redis"
+  http:
+    debug: false
+    enable_security_headers: true
+    middleware:
+      cors:
+        allow_origins: ["https://yourdomain.com"]
+        allow_credentials: true
+      csrf:
+        cookie_secure: true
+      session:
+        cookie_secure: true
+
+# Testing Environment
+testing:
+  app:
+    debug: true
+  log:
+    level: "warning"
+  cache:
+    default_driver: "memory"
+    drivers:
+      memory:
+        default_ttl: 60
+        max_items: 100
