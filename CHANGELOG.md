@@ -8,10 +8,13 @@ và dự án này tuân thủ [Semantic Versioning](https://semver.org/spec/v2.0
 ## [Chưa phát hành]
 
 ### Đã thêm
-- **Tài liệu tiếng Việt hoàn chỉnh**: Bổ sung tài liệu tiếng Việt đầy đủ cho package core:
-  - Tài liệu Module Loader (`/docs/loader.md`): Kiến trúc, workflow và best practices
+- **Tài liệu tiếng Việt hoàn chỉnh**: Xây dựng toàn bộ tài liệu tiếng Việt đầy đủ cho package core:
+  - Tài liệu Tổng quan Hệ thống (`/docs/overview.md`): Kiến trúc, tính năng và hiệu suất
+  - Tài liệu Application Interface (`/docs/application.md`): Chi tiết Application interface và implementation
+  - Tài liệu Module Loader (`/docs/loader.md`): Hệ thống Module Loader
   - Tài liệu Workflows (`/docs/workflows.md`): Quy trình hoạt động và dependency management
   - Tài liệu Core Providers (`/docs/core_providers.md`): Chi tiết về các core providers
+  - Trang chủ tài liệu (`/docs/index.md`): Tổng quan và hướng dẫn sử dụng
   - Sử dụng Mermaid diagram cho tất cả các workflow
   - Ví dụ mã nguồn thực tế và chi tiết kỹ thuật
   
