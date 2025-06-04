@@ -5,9 +5,11 @@ Tất cả các thay đổi đáng chú ý của dự án này sẽ được ghi
 Định dạng dựa trên [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 và dự án này tuân thủ [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Chưa phát hành]
+## [Unreleased]
 
-### Đã thêm
+## [0.1.0] - 2025-06-05
+
+### Added
 - **Tài liệu tiếng Việt hoàn chỉnh**: Xây dựng toàn bộ tài liệu tiếng Việt đầy đủ cho package core:
   - Tài liệu Tổng quan Hệ thống (`/docs/overview.md`): Kiến trúc, tính năng và hiệu suất
   - Tài liệu Application Interface (`/docs/application.md`): Chi tiết Application interface và implementation
@@ -26,14 +28,12 @@ và dự án này tuân thủ [Semantic Versioning](https://semver.org/spec/v2.0
   - Hướng dẫn cài đặt và sử dụng
   - Performance benchmark
 
-### Cải tiến
+### Changed
 - **Cấu trúc tài liệu**: Tổ chức tài liệu với cấu trúc nhất quán và navigation giữa các trang
 - **Định dạng tài liệu**: Chuyển đổi HTML sang Markdown chuẩn cho khả năng tương thích tốt hơn
 - **Hỗ trợ đa ngôn ngữ**: Documentation hoàn chỉnh bằng tiếng Việt với thuật ngữ kỹ thuật chính xác
 
-## Phát hành đầu tiên [0.1.0] - 2024-12-19
-
-### Đã thêm
+### Added
 
 #### Framework Ứng dụng Cốt lõi
 - **Application Interface**: Interface `Application` cốt lõi định nghĩa hợp đồng cho quản lý dependency injection container
@@ -88,7 +88,7 @@ và dự án này tuân thủ [Semantic Versioning](https://semver.org/spec/v2.0
 - **Ví dụ Sử dụng**: Cấu hình và pattern sử dụng mẫu trong `/docs/`
 - **Tài liệu Kiến trúc**: Kiến trúc chi tiết và quyết định thiết kế
 
-### Chi tiết Kỹ thuật
+### Technical Details
 
 #### Dependency
 - **go.fork.vn/config v0.1.3**: Quản lý cấu hình
@@ -96,29 +96,29 @@ và dự án này tuân thủ [Semantic Versioning](https://semver.org/spec/v2.0
 - **go.fork.vn/log v0.1.3**: Framework logging
 - **github.com/stretchr/testify v1.10.0**: Tiện ích testing
 
-#### Tính năng Chính
+#### Key Features
 - **Tạo key service provider zero-allocation** sử dụng địa chỉ bộ nhớ
 - **Thuật toán topological sort** cho phân giải dependency
 - **Thao tác thread-safe** cho môi trường concurrent
 - **Cấu hình linh hoạt** thông qua file config bên ngoài
 - **Xử lý lỗi toàn diện** với thông báo lỗi chi tiết
 
-### Thay đổi Phá vỡ
+### Breaking Changes
 - Đây là phát hành đầu tiên, không có thay đổi phá vỡ
 
-### Hướng dẫn Migration
+### Migration Guide
 - Đây là phát hành đầu tiên, không cần migration
 
-### Hiệu suất
+### Performance
 - Phân giải dependency hiệu quả với độ phức tạp O(V + E)
 - Overhead bộ nhớ tối thiểu cho theo dõi service provider
 - Tối ưu hóa cho cả kịch bản dependency đơn giản và phức tạp
 
 ---
 
-## Thông tin Phát triển
+## Development Information
 
-### Cấu trúc Dự án
+### Project Structure
 ```
 go.fork.vn/core/
 ├── application.go          # Triển khai application cốt lõi
@@ -133,8 +133,8 @@ go.fork.vn/core/
 └── .github/               # Workflow CI/CD
 ```
 
-### Đóng góp
+### Contributing
 Vui lòng đọc hướng dẫn đóng góp trong thư mục docs/ trước khi gửi pull request.
 
-### Giấy phép
+### License
 Dự án này được cấp phép theo các điều khoản được chỉ định trong file LICENSE.

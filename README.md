@@ -1,4 +1,4 @@
-![go.fork.vn Logo](https://go.fork.vn/assets/logo.svg)
+![fork.vn Logo](https://fork.vn/assets/logo.svg)
 
 # go.fork.vn/core
 
@@ -14,7 +14,7 @@
 
 **go.fork.vn/core** là package nền tảng của hệ sinh thái go.fork.vn, cung cấp các interface và implementation cốt lõi để xây dựng ứng dụng Go hiện đại với kiến trúc modular, dependency injection và quản lý lifecycle tự động.
 
-Package này xây dựng dựa trên [go.fork.vn/di](https://github.com/go-fork/di) và mở rộng với các tính năng mạnh mẽ hơn như:
+Package này triển khai, xây dựng dựa trên [go.fork.vn/di](https://github.com/go-fork/di) và mở rộng với các tính năng mạnh mẽ hơn như:
 
 - **Smart Dependency Management**: Sắp xếp và phát hiện circular dependencies tự động
 - **Module Loading System**: Quản lý bootstrap và loading của modules
@@ -344,4 +344,4 @@ Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 
 ---
 
-*Made with ❤️ by Go.Fork Team*
+*Made with ❤️ by Fork Team*
