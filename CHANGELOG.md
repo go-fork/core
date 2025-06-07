@@ -7,6 +7,19 @@ và dự án này tuân thủ [Semantic Versioning](https://semver.org/spec/v2.0
 
 ## [Unreleased]
 
+### Fixed
+- **Log v0.1.4 Bug Resolution**: Upgraded dependency go.fork.vn/log từ v0.1.4 lên v0.1.5
+  - Fixed file handler initialization bug trong log v0.1.4 gây panic khi file path empty
+  - Integration tests hiện tại đã hoạt động hoàn hảo với 87/87 tests PASS
+  - Removed workaround configs và restored normal log configuration handling
+
+### Changed  
+- **Test Infrastructure Improvements**: Cleaned up test workspace và improved test reliability
+  - Removed backup test files: loader_test_clean.go, loader_test.go.backup, loader_test.go.bak, loader_test.go.v0.1.3
+  - Removed duplicate config files: console-only-v014.yaml, console-only-log.yaml
+  - Maintained comprehensive test coverage: 24 Unit tests + 15 Integration tests + 6 Contract tests
+  - All tests now stable với log v0.1.5
+
 ## [0.1.0] - 2025-06-05
 
 ### Added

@@ -39,3 +39,5 @@ dist/
 # Project specific files
 tmp/
 *.log
+
+storages/*

@@ -6,7 +6,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	go.fork.vn/config v0.1.3
 	go.fork.vn/di v0.1.3
-	go.fork.vn/log v0.1.3
+	go.fork.vn/log v0.1.5
 )
 
 require (
@@ -25,6 +25,6 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
-	golang.org/x/text v0.25.0 // indirect
+	golang.org/x/text v0.26.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

@@ -3,7 +3,7 @@ resolve-type-alias: false
 disable-version-string: true
 quiet: false
 dir: "mocks"  # Giữ nguyên tên thư mục mocks
-outpkg: "core_mocks"  # Đặt tên package động theo tên package gốc
+outpkg: "mocks"  # Đặt tên package động theo tên package gốc
 mockname: "Mock{{.InterfaceName}}"  # Chuẩn đặt tên mock
 structname: "Mock{{.InterfaceName}}"
 filename: "{{.InterfaceName | snakecase}}.go"  # Tên file mock theo tên interface
