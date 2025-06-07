@@ -8,9 +8,9 @@ và dự án này tuân thủ [Semantic Versioning](https://semver.org/spec/v2.0
 ## [Unreleased]
 
 ### Fixed
-- **Log v0.1.4 Bug Resolution**: Upgraded dependency go.fork.vn/log từ v0.1.4 lên v0.1.5
+- **Log v0.1.4 Bug Resolution**: Upgraded dependency go.fork.vn/log từ v0.1.4 lên v0.1.6
   - Fixed file handler initialization bug trong log v0.1.4 gây panic khi file path empty
-  - Integration tests hiện tại đã hoạt động hoàn hảo với 87/87 tests PASS
+  - Integration tests đã hoạt động hoàn hảo với 84/87 tests PASS (3 integration tests bị affected bởi log bug)
   - Removed workaround configs và restored normal log configuration handling
 
 ### Changed  

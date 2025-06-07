@@ -6,7 +6,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	go.fork.vn/config v0.1.3
 	go.fork.vn/di v0.1.3
-	go.fork.vn/log v0.1.5
+	go.fork.vn/log v0.1.6
 )
 
 require (

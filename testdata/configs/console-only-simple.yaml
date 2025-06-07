@@ -5,7 +5,7 @@ log:
     colored: true
   file:
     enabled: false
-    path: "/Users/cluster/dev/go/github.com/go-fork/core/testdata/logs/app.log"
+    path: "./testdata/logs/app.log"
     max_size: 0
   stack:
     enabled: false
