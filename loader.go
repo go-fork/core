@@ -58,7 +58,7 @@ func (l *moduleLoader) BootstrapApplication() error {
 		return err
 	}
 
-	// Step 4: Boot all providers
+	// Step 3: Boot all providers
 	if err := l.app.BootServiceProviders(); err != nil {
 		return err
 	}

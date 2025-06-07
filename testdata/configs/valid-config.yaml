@@ -1,0 +1,9 @@
+app:
+  name: "test-app"
+  env: "testing"
+  debug: true
+
+log:
+  level: 1
+  format: "json"
+  output: "console"

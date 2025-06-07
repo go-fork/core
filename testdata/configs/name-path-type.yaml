@@ -1,0 +1,10 @@
+app:
+  name: "name-path-type-test"
+  env: "testing"
+  debug: true
+
+log:
+  level: 1
+  console:
+    enabled: true
+    colored: true
