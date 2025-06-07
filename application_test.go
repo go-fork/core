@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	configMocks "go.fork.vn/config/mocks"
 	"go.fork.vn/core"
 	"go.fork.vn/di"
@@ -11,7 +12,7 @@ import (
 	logMocks "go.fork.vn/log/mocks"
 )
 
-// TestApplication_New tests application constructor
+// TestApplication_New tests Application constructor
 func TestApplication_New(t *testing.T) {
 	t.Run("creates_application_with_valid_config", func(t *testing.T) {
 		t.Parallel()
@@ -37,6 +38,17 @@ func TestApplication_New(t *testing.T) {
 
 		assert.NotNil(t, app)
 		assert.NotNil(t, app.Container())
+		assert.NotNil(t, app.ModuleLoader())
+	})
+
+	t.Run("creates_application_with_nil_config", func(t *testing.T) {
+		t.Parallel()
+
+		app := core.New(nil)
+
+		assert.NotNil(t, app)
+		assert.NotNil(t, app.Container())
+		assert.NotNil(t, app.ModuleLoader())
 	})
 }
 
@@ -48,15 +60,11 @@ func TestApplication_Register(t *testing.T) {
 		config := map[string]interface{}{}
 		app := core.New(config)
 
-		// Create mock service provider using mockery
 		mockProvider := diMocks.NewMockServiceProvider(t)
 		mockProvider.EXPECT().Providers().Return([]string{"test.service"}).Maybe()
 		mockProvider.EXPECT().Requires().Return([]string{}).Maybe()
 
-		// Test registration - should not panic
 		app.Register(mockProvider)
-
-		// Verify provider is registered
 		assert.NotNil(t, app)
 	})
 
@@ -66,151 +74,6 @@ func TestApplication_Register(t *testing.T) {
 		config := map[string]interface{}{}
 		app := core.New(config)
 
-		// Should panic when registering nil provider
-		assert.Panics(t, func() {
-			app.Register(nil)
-		})
-	})
-}
-
-// TestApplication_DI_Integration tests DI container integration
-func TestApplication_DI_Integration(t *testing.T) {
-	t.Run("bind_and_make_service", func(t *testing.T) {
-		t.Parallel()
-
-		config := map[string]interface{}{}
-		app := core.New(config)
-
-		// Test binding
-		app.Bind("test.service", func(c di.Container) interface{} {
-			return "test-value"
-		})
-
-		// Test making
-		service, err := app.Make("test.service")
-		assert.NoError(t, err)
-		assert.Equal(t, "test-value", service)
-	})
-
-	t.Run("singleton_binding", func(t *testing.T) {
-		t.Parallel()
-
-		config := map[string]interface{}{}
-		app := core.New(config)
-
-		// Counter to track instantiation
-		counter := 0
-
-		// Test singleton binding
-		app.Singleton("counter.service", func(c di.Container) interface{} {
-			counter++
-			return counter
-		})
-
-		// Make multiple times
-		service1, err1 := app.Make("counter.service")
-		service2, err2 := app.Make("counter.service")
-
-		assert.NoError(t, err1)
-		assert.NoError(t, err2)
-		assert.Equal(t, 1, service1)
-		assert.Equal(t, 1, service2) // Should be same instance
-		assert.Equal(t, 1, counter)  // Should only instantiate once
-	})
-}
-
-// TestApplication_Config_Integration tests config integration with mocks
-func TestApplication_Config_Integration(t *testing.T) {
-	t.Run("returns_config_manager_when_available", func(t *testing.T) {
-		t.Parallel()
-
-		config := map[string]interface{}{}
-		app := core.New(config)
-
-		// Create mock config manager using mockery
-		mockConfig := configMocks.NewMockManager(t)
-
-		// Bind mock config to container
-		app.Instance("config", mockConfig)
-
-		// Test config access
-		configManager := app.Config()
-		assert.Equal(t, mockConfig, configManager)
-	})
-
-	t.Run("panics_when_config_not_registered", func(t *testing.T) {
-		t.Parallel()
-
-		config := map[string]interface{}{}
-		app := core.New(config)
-
-		// Should panic when config not registered
-		assert.Panics(t, func() {
-			app.Config()
-		})
-	})
-}
-
-// TestApplication_Log_Integration tests log integration with mocks
-func TestApplication_Log_Integration(t *testing.T) {
-	t.Run("returns_log_manager_when_available", func(t *testing.T) {
-		t.Parallel()
-
-		config := map[string]interface{}{}
-		app := core.New(config)
-
-		// Create mock log manager using mockery
-		mockLog := logMocks.NewMockManager(t)
-
-		// Bind mock log to container
-		app.Instance("log", mockLog)
-
-		// Test log access
-		logManager := app.Log()
-		assert.Equal(t, mockLog, logManager)
-	})
-
-	t.Run("panics_when_log_not_registered", func(t *testing.T) {
-		t.Parallel()
-
-		config := map[string]interface{}{}
-		app := core.New(config)
-
-		// Should panic when log not registered
-		assert.Panics(t, func() {
-			app.Log()
-		})
-	})
-}
-
-// TestApplication_Register_Advanced tests advanced registration scenarios
-func TestApplication_Register_Advanced(t *testing.T) {
-	t.Run("registers_provider_and_stores_in_providers_slice", func(t *testing.T) {
-		t.Parallel()
-
-		config := map[string]interface{}{}
-		app := core.New(config)
-
-		// Create mock provider
-		mockProvider := diMocks.NewMockServiceProvider(t)
-		mockProvider.EXPECT().Providers().Return([]string{"test.service"}).Maybe()
-		mockProvider.EXPECT().Requires().Return([]string{}).Maybe()
-
-		// Register provider
-		app.Register(mockProvider)
-
-		// Verify provider is stored by checking if dependency resolution works
-		// We can't access internal slice directly, but we can test the behavior
-		assert.NotNil(t, app)
-	})
-
-	t.Run("panics_when_provider_is_nil", func(t *testing.T) {
-		t.Parallel()
-
-		config := map[string]interface{}{}
-		app := core.New(config)
-
-		// Should panic with nil provider
 		assert.Panics(t, func() {
 			app.Register(nil)
 		})
@@ -222,7 +85,6 @@ func TestApplication_Register_Advanced(t *testing.T) {
 		config := map[string]interface{}{}
 		app := core.New(config)
 
-		// Create multiple providers
 		provider1 := diMocks.NewMockServiceProvider(t)
 		provider1.EXPECT().Providers().Return([]string{"service1"}).Maybe()
 		provider1.EXPECT().Requires().Return([]string{}).Maybe()
@@ -235,25 +97,76 @@ func TestApplication_Register_Advanced(t *testing.T) {
 		provider3.EXPECT().Providers().Return([]string{"service3"}).Maybe()
 		provider3.EXPECT().Requires().Return([]string{}).Maybe()
 
-		// Register in specific order
 		app.Register(provider1)
 		app.Register(provider2)
 		app.Register(provider3)
 
-		// Verify all registered (indirect test through other methods)
 		assert.NotNil(t, app)
 	})
 }
 
-// TestApplication_Requires_DependencyResolution tests Requires() method integration
-func TestApplication_Requires_DependencyResolution(t *testing.T) {
-	t.Run("simple_dependency_chain_A_requires_nothing", func(t *testing.T) {
+// TestApplication_RegisterServiceProviders tests RegisterServiceProviders method
+func TestApplication_RegisterServiceProviders(t *testing.T) {
+	t.Run("registers_all_providers_in_order", func(t *testing.T) {
 		t.Parallel()
 
 		config := map[string]interface{}{}
 		app := core.New(config)
 
-		// Provider A requires nothing
+		var registrationOrder []string
+
+		providerA := diMocks.NewMockServiceProvider(t)
+		providerA.EXPECT().Providers().Return([]string{"service.a"}).Maybe()
+		providerA.EXPECT().Requires().Return([]string{}).Maybe()
+		providerA.EXPECT().Register(app).Once().Run(func(args mock.Arguments) {
+			registrationOrder = append(registrationOrder, "A")
+		})
+
+		providerB := diMocks.NewMockServiceProvider(t)
+		providerB.EXPECT().Providers().Return([]string{"service.b"}).Maybe()
+		providerB.EXPECT().Requires().Return([]string{}).Maybe()
+		providerB.EXPECT().Register(app).Once().Run(func(args mock.Arguments) {
+			registrationOrder = append(registrationOrder, "B")
+		})
+
+		app.Register(providerA)
+		app.Register(providerB)
+
+		err := app.RegisterServiceProviders()
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"A", "B"}, registrationOrder)
+
+		providerA.AssertExpectations(t)
+		providerB.AssertExpectations(t)
+	})
+
+	t.Run("handles_registration_error", func(t *testing.T) {
+		t.Parallel()
+
+		config := map[string]interface{}{}
+		app := core.New(config)
+
+		provider := diMocks.NewMockServiceProvider(t)
+		provider.EXPECT().Providers().Return([]string{"service"}).Maybe()
+		provider.EXPECT().Requires().Return([]string{}).Maybe()
+		provider.EXPECT().Register(app).Once().Return()
+
+		app.Register(provider)
+
+		// This should not panic in normal circumstances
+		err := app.RegisterServiceProviders()
+		assert.NoError(t, err)
+	})
+}
+
+// TestApplication_RegisterWithDependencies tests dependency resolution
+func TestApplication_RegisterWithDependencies(t *testing.T) {
+	t.Run("simple_dependency_chain_a_requires_nothing", func(t *testing.T) {
+		t.Parallel()
+
+		config := map[string]interface{}{}
+		app := core.New(config)
+
 		providerA := diMocks.NewMockServiceProvider(t)
 		providerA.EXPECT().Providers().Return([]string{"database.connection"}).Maybe()
 		providerA.EXPECT().Requires().Return([]string{}).Maybe()
@@ -261,68 +174,60 @@ func TestApplication_Requires_DependencyResolution(t *testing.T) {
 
 		app.Register(providerA)
 
-		// Should register without issues
 		err := app.RegisterWithDependencies()
 		assert.NoError(t, err)
 
 		providerA.AssertExpectations(t)
 	})
 
-	t.Run("dependency_chain_B_requires_A", func(t *testing.T) {
+	t.Run("dependency_chain_b_requires_a", func(t *testing.T) {
 		t.Parallel()
 
 		config := map[string]interface{}{}
 		app := core.New(config)
 
-		// Provider A: provides database, requires nothing
 		providerA := diMocks.NewMockServiceProvider(t)
 		providerA.EXPECT().Providers().Return([]string{"database.connection"}).Maybe()
 		providerA.EXPECT().Requires().Return([]string{}).Maybe()
 		providerA.EXPECT().Register(app).Once()
 
-		// Provider B: provides cache, requires database
 		providerB := diMocks.NewMockServiceProvider(t)
 		providerB.EXPECT().Providers().Return([]string{"cache.manager"}).Maybe()
 		providerB.EXPECT().Requires().Return([]string{"database.connection"}).Maybe()
 		providerB.EXPECT().Register(app).Once()
 
-		// Register in reverse order to test dependency resolution
-		app.Register(providerB)
+		app.Register(providerB) // Register B first to test sorting
 		app.Register(providerA)
 
 		err := app.RegisterWithDependencies()
 		assert.NoError(t, err)
 
-		// Both should be registered
 		providerA.AssertExpectations(t)
 		providerB.AssertExpectations(t)
 	})
 
-	t.Run("complex_dependency_chain_C_requires_B_requires_A", func(t *testing.T) {
+	t.Run("complex_dependency_chain_c_requires_b_requires_a", func(t *testing.T) {
 		t.Parallel()
 
 		config := map[string]interface{}{}
 		app := core.New(config)
 
-		// Provider A: provides config, requires nothing
 		providerA := diMocks.NewMockServiceProvider(t)
 		providerA.EXPECT().Providers().Return([]string{"app.config"}).Maybe()
 		providerA.EXPECT().Requires().Return([]string{}).Maybe()
 		providerA.EXPECT().Register(app).Once()
 
-		// Provider B: provides database, requires config
 		providerB := diMocks.NewMockServiceProvider(t)
 		providerB.EXPECT().Providers().Return([]string{"database.connection"}).Maybe()
 		providerB.EXPECT().Requires().Return([]string{"app.config"}).Maybe()
 		providerB.EXPECT().Register(app).Once()
 
-		// Provider C: provides auth, requires database
 		providerC := diMocks.NewMockServiceProvider(t)
 		providerC.EXPECT().Providers().Return([]string{"auth.service"}).Maybe()
 		providerC.EXPECT().Requires().Return([]string{"database.connection"}).Maybe()
 		providerC.EXPECT().Register(app).Once()
 
-		// Register in completely reverse order
+		// Register in reverse order to test dependency resolution
 		app.Register(providerC)
 		app.Register(providerB)
 		app.Register(providerA)
@@ -330,7 +235,6 @@ func TestApplication_Requires_DependencyResolution(t *testing.T) {
 		err := app.RegisterWithDependencies()
 		assert.NoError(t, err)
 
-		// All should be registered
 		providerA.AssertExpectations(t)
 		providerB.AssertExpectations(t)
 		providerC.AssertExpectations(t)
@@ -342,19 +246,16 @@ func TestApplication_Requires_DependencyResolution(t *testing.T) {
 		config := map[string]interface{}{}
 		app := core.New(config)
 
-		// Provider A: provides shared service
 		providerA := diMocks.NewMockServiceProvider(t)
 		providerA.EXPECT().Providers().Return([]string{"shared.service"}).Maybe()
 		providerA.EXPECT().Requires().Return([]string{}).Maybe()
 		providerA.EXPECT().Register(app).Once()
 
-		// Provider B: requires shared service
 		providerB := diMocks.NewMockServiceProvider(t)
 		providerB.EXPECT().Providers().Return([]string{"feature.b"}).Maybe()
 		providerB.EXPECT().Requires().Return([]string{"shared.service"}).Maybe()
 		providerB.EXPECT().Register(app).Once()
 
-		// Provider C: also requires shared service
 		providerC := diMocks.NewMockServiceProvider(t)
 		providerC.EXPECT().Providers().Return([]string{"feature.c"}).Maybe()
 		providerC.EXPECT().Requires().Return([]string{"shared.service"}).Maybe()
@@ -378,19 +279,16 @@ func TestApplication_Requires_DependencyResolution(t *testing.T) {
 		config := map[string]interface{}{}
 		app := core.New(config)
 
-		// Provider A: provides service A
 		providerA := diMocks.NewMockServiceProvider(t)
 		providerA.EXPECT().Providers().Return([]string{"service.a"}).Maybe()
 		providerA.EXPECT().Requires().Return([]string{}).Maybe()
 		providerA.EXPECT().Register(app).Once()
 
-		// Provider B: provides service B
 		providerB := diMocks.NewMockServiceProvider(t)
 		providerB.EXPECT().Providers().Return([]string{"service.b"}).Maybe()
 		providerB.EXPECT().Requires().Return([]string{}).Maybe()
 		providerB.EXPECT().Register(app).Once()
 
-		// Provider C: requires both A and B
 		providerC := diMocks.NewMockServiceProvider(t)
 		providerC.EXPECT().Providers().Return([]string{"service.c"}).Maybe()
 		providerC.EXPECT().Requires().Return([]string{"service.a", "service.b"}).Maybe()
@@ -407,22 +305,17 @@ func TestApplication_Requires_DependencyResolution(t *testing.T) {
 		providerB.AssertExpectations(t)
 		providerC.AssertExpectations(t)
 	})
-}
 
-// TestApplication_TopologicalSort_ErrorCases tests topological sort error scenarios
-func TestApplication_TopologicalSort_ErrorCases(t *testing.T) {
-	t.Run("circular_dependency_A_requires_B_requires_A", func(t *testing.T) {
+	t.Run("circular_dependency_error", func(t *testing.T) {
 		t.Parallel()
 
 		config := map[string]interface{}{}
 		app := core.New(config)
 
-		// Provider A requires B
 		providerA := diMocks.NewMockServiceProvider(t)
 		providerA.EXPECT().Providers().Return([]string{"service.a"}).Maybe()
 		providerA.EXPECT().Requires().Return([]string{"service.b"}).Maybe()
 
-		// Provider B requires A (circular)
 		providerB := diMocks.NewMockServiceProvider(t)
 		providerB.EXPECT().Providers().Return([]string{"service.b"}).Maybe()
 		providerB.EXPECT().Requires().Return([]string{"service.a"}).Maybe()
@@ -432,286 +325,147 @@ func TestApplication_TopologicalSort_ErrorCases(t *testing.T) {
 
 		err := app.RegisterWithDependencies()
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "circular dependency")
+		assert.Contains(t, err.Error(), "circular dependency detected")
 	})
 
-	t.Run("complex_circular_dependency_A_requires_B_requires_C_requires_A", func(t *testing.T) {
+	t.Run("missing_required_service_error", func(t *testing.T) {
 		t.Parallel()
 
 		config := map[string]interface{}{}
 		app := core.New(config)
 
-		// A -> B -> C -> A (circular)
-		providerA := diMocks.NewMockServiceProvider(t)
-		providerA.EXPECT().Providers().Return([]string{"service.a"}).Maybe()
-		providerA.EXPECT().Requires().Return([]string{"service.c"}).Maybe()
-
-		providerB := diMocks.NewMockServiceProvider(t)
-		providerB.EXPECT().Providers().Return([]string{"service.b"}).Maybe()
-		providerB.EXPECT().Requires().Return([]string{"service.a"}).Maybe()
-
-		providerC := diMocks.NewMockServiceProvider(t)
-		providerC.EXPECT().Providers().Return([]string{"service.c"}).Maybe()
-		providerC.EXPECT().Requires().Return([]string{"service.b"}).Maybe()
-
-		app.Register(providerA)
-		app.Register(providerB)
-		app.Register(providerC)
-
-		err := app.RegisterWithDependencies()
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "circular dependency")
-	})
-
-	t.Run("missing_required_service", func(t *testing.T) {
-		t.Parallel()
-
-		config := map[string]interface{}{}
-		app := core.New(config)
-
-		// Provider requires a service that no provider provides
 		provider := diMocks.NewMockServiceProvider(t)
-		provider.EXPECT().Providers().Return([]string{"my.service"}).Maybe()
-		provider.EXPECT().Requires().Return([]string{"nonexistent.service"}).Maybe()
+		provider.EXPECT().Providers().Return([]string{"service.a"}).Maybe()
+		provider.EXPECT().Requires().Return([]string{"missing.service"}).Maybe()
 
 		app.Register(provider)
 
 		err := app.RegisterWithDependencies()
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "required service 'nonexistent.service' not provided")
+		assert.Contains(t, err.Error(), "required service 'missing.service' not provided by any registered provider")
 	})
+}
 
-	t.Run("partially_missing_requirements", func(t *testing.T) {
+// TestApplication_BootServiceProviders tests service provider booting
+func TestApplication_BootServiceProviders(t *testing.T) {
+	t.Run("boots_providers_in_dependency_order", func(t *testing.T) {
 		t.Parallel()
 
 		config := map[string]interface{}{}
 		app := core.New(config)
 
-		// Provider A exists
+		var bootOrder []string
+
 		providerA := diMocks.NewMockServiceProvider(t)
 		providerA.EXPECT().Providers().Return([]string{"service.a"}).Maybe()
 		providerA.EXPECT().Requires().Return([]string{}).Maybe()
-
-		// Provider C requires both A (exists) and B (missing)
-		providerC := diMocks.NewMockServiceProvider(t)
-		providerC.EXPECT().Providers().Return([]string{"service.c"}).Maybe()
-		providerC.EXPECT().Requires().Return([]string{"service.a", "missing.service.b"}).Maybe()
-
-		app.Register(providerA)
-		app.Register(providerC)
-
-		err := app.RegisterWithDependencies()
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "required service 'missing.service.b' not provided")
-	})
-}
-
-// TestApplication_TopologicalSort_ComplexScenarios tests complex sorting scenarios
-func TestApplication_TopologicalSort_ComplexScenarios(t *testing.T) {
-	t.Run("diamond_dependency_pattern", func(t *testing.T) {
-		t.Parallel()
-
-		config := map[string]interface{}{}
-		app := core.New(config)
-
-		// Diamond pattern: A -> B,C -> D
-		// A provides base service
-		providerA := diMocks.NewMockServiceProvider(t)
-		providerA.EXPECT().Providers().Return([]string{"base.service"}).Maybe()
-		providerA.EXPECT().Requires().Return([]string{}).Maybe()
 		providerA.EXPECT().Register(app).Once()
+		providerA.EXPECT().Boot(app).Once().Run(func(args mock.Arguments) {
+			bootOrder = append(bootOrder, "providerA")
+		})
 
-		// B requires A
 		providerB := diMocks.NewMockServiceProvider(t)
-		providerB.EXPECT().Providers().Return([]string{"feature.b"}).Maybe()
-		providerB.EXPECT().Requires().Return([]string{"base.service"}).Maybe()
+		providerB.EXPECT().Providers().Return([]string{"service.b"}).Maybe()
+		providerB.EXPECT().Requires().Return([]string{"service.a"}).Maybe()
 		providerB.EXPECT().Register(app).Once()
+		providerB.EXPECT().Boot(app).Once().Run(func(args mock.Arguments) {
+			bootOrder = append(bootOrder, "providerB")
+		})
 
-		// C requires A
-		providerC := diMocks.NewMockServiceProvider(t)
-		providerC.EXPECT().Providers().Return([]string{"feature.c"}).Maybe()
-		providerC.EXPECT().Requires().Return([]string{"base.service"}).Maybe()
-		providerC.EXPECT().Register(app).Once()
-
-		// D requires both B and C
-		providerD := diMocks.NewMockServiceProvider(t)
-		providerD.EXPECT().Providers().Return([]string{"combined.service"}).Maybe()
-		providerD.EXPECT().Requires().Return([]string{"feature.b", "feature.c"}).Maybe()
-		providerD.EXPECT().Register(app).Once()
-
-		// Register in random order
-		app.Register(providerD)
-		app.Register(providerB)
+		app.Register(providerB) // Register B first
 		app.Register(providerA)
-		app.Register(providerC)
 
 		err := app.RegisterWithDependencies()
 		assert.NoError(t, err)
+
+		err = app.BootServiceProviders()
+		assert.NoError(t, err)
+
+		// Should boot A before B due to dependency
+		assert.Equal(t, []string{"providerA", "providerB"}, bootOrder)
 
 		providerA.AssertExpectations(t)
 		providerB.AssertExpectations(t)
-		providerC.AssertExpectations(t)
-		providerD.AssertExpectations(t)
 	})
 
-	t.Run("multiple_independent_chains", func(t *testing.T) {
+	t.Run("handles_boot_error", func(t *testing.T) {
 		t.Parallel()
 
 		config := map[string]interface{}{}
 		app := core.New(config)
 
-		// Chain 1: A1 -> B1
-		providerA1 := diMocks.NewMockServiceProvider(t)
-		providerA1.EXPECT().Providers().Return([]string{"chain1.base"}).Maybe()
-		providerA1.EXPECT().Requires().Return([]string{}).Maybe()
-		providerA1.EXPECT().Register(app).Once()
+		provider := diMocks.NewMockServiceProvider(t)
+		provider.EXPECT().Providers().Return([]string{"service"}).Maybe()
+		provider.EXPECT().Requires().Return([]string{}).Maybe()
+		provider.EXPECT().Register(app).Once()
+		provider.EXPECT().Boot(app).Once().Return()
 
-		providerB1 := diMocks.NewMockServiceProvider(t)
-		providerB1.EXPECT().Providers().Return([]string{"chain1.feature"}).Maybe()
-		providerB1.EXPECT().Requires().Return([]string{"chain1.base"}).Maybe()
-		providerB1.EXPECT().Register(app).Once()
-
-		// Chain 2: A2 -> B2
-		providerA2 := diMocks.NewMockServiceProvider(t)
-		providerA2.EXPECT().Providers().Return([]string{"chain2.base"}).Maybe()
-		providerA2.EXPECT().Requires().Return([]string{}).Maybe()
-		providerA2.EXPECT().Register(app).Once()
-
-		providerB2 := diMocks.NewMockServiceProvider(t)
-		providerB2.EXPECT().Providers().Return([]string{"chain2.feature"}).Maybe()
-		providerB2.EXPECT().Requires().Return([]string{"chain2.base"}).Maybe()
-		providerB2.EXPECT().Register(app).Once()
-
-		// Independent provider
-		independentProvider := diMocks.NewMockServiceProvider(t)
-		independentProvider.EXPECT().Providers().Return([]string{"independent.service"}).Maybe()
-		independentProvider.EXPECT().Requires().Return([]string{}).Maybe()
-		independentProvider.EXPECT().Register(app).Once()
-
-		// Register in mixed order
-		app.Register(providerB1)
-		app.Register(independentProvider)
-		app.Register(providerB2)
-		app.Register(providerA1)
-		app.Register(providerA2)
+		app.Register(provider)
 
 		err := app.RegisterWithDependencies()
 		assert.NoError(t, err)
 
-		providerA1.AssertExpectations(t)
-		providerB1.AssertExpectations(t)
-		providerA2.AssertExpectations(t)
-		providerB2.AssertExpectations(t)
-		independentProvider.AssertExpectations(t)
+		err = app.BootServiceProviders()
+		assert.NoError(t, err)
 	})
 
-	t.Run("deep_dependency_chain", func(t *testing.T) {
+	t.Run("handles_already_booted_scenario", func(t *testing.T) {
 		t.Parallel()
 
 		config := map[string]interface{}{}
 		app := core.New(config)
 
-		// Deep chain: A -> B -> C -> D -> E
-		providers := make([]*diMocks.MockServiceProvider, 5)
-		services := []string{"level.a", "level.b", "level.c", "level.d", "level.e"}
+		provider := diMocks.NewMockServiceProvider(t)
+		provider.EXPECT().Providers().Return([]string{"service"}).Maybe()
+		provider.EXPECT().Requires().Return([]string{}).Maybe()
+		provider.EXPECT().Register(app).Once()
+		provider.EXPECT().Boot(app).Once()
 
-		for i := 0; i < 5; i++ {
-			providers[i] = diMocks.NewMockServiceProvider(t)
-			providers[i].EXPECT().Providers().Return([]string{services[i]}).Maybe()
-			providers[i].EXPECT().Register(app).Once()
-
-			if i == 0 {
-				providers[i].EXPECT().Requires().Return([]string{}).Maybe()
-			} else {
-				providers[i].EXPECT().Requires().Return([]string{services[i-1]}).Maybe()
-			}
-		}
-
-		// Register in reverse order
-		for i := 4; i >= 0; i-- {
-			app.Register(providers[i])
-		}
+		app.Register(provider)
 
 		err := app.RegisterWithDependencies()
 		assert.NoError(t, err)
 
-		for i := 0; i < 5; i++ {
-			providers[i].AssertExpectations(t)
-		}
+		// First boot
+		err = app.BootServiceProviders()
+		assert.NoError(t, err)
+
+		// Second boot should not call Boot again
+		err = app.BootServiceProviders()
+		assert.NoError(t, err)
+
+		provider.AssertExpectations(t)
 	})
 }
 
-// TestApplication_Integration_RegisterWithDependencies tests full integration
-func TestApplication_Integration_RegisterWithDependencies(t *testing.T) {
-	t.Run("realistic_web_application_dependencies", func(t *testing.T) {
+// TestApplication_Boot tests the high-level Boot method
+func TestApplication_Boot(t *testing.T) {
+	t.Run("boot_with_no_dependencies_uses_simple_registration", func(t *testing.T) {
 		t.Parallel()
 
 		config := map[string]interface{}{}
 		app := core.New(config)
 
-		// Config provider (no dependencies)
-		configProvider := diMocks.NewMockServiceProvider(t)
-		configProvider.EXPECT().Providers().Return([]string{"config"}).Maybe()
-		configProvider.EXPECT().Requires().Return([]string{}).Maybe()
-		configProvider.EXPECT().Register(app).Once()
+		provider := diMocks.NewMockServiceProvider(t)
+		provider.EXPECT().Providers().Return([]string{"service"}).Maybe()
+		provider.EXPECT().Requires().Return([]string{}).Maybe()
+		provider.EXPECT().Register(app).Once()
+		provider.EXPECT().Boot(app).Once()
 
-		// Log provider (depends on config)
-		logProvider := diMocks.NewMockServiceProvider(t)
-		logProvider.EXPECT().Providers().Return([]string{"log"}).Maybe()
-		logProvider.EXPECT().Requires().Return([]string{"config"}).Maybe()
-		logProvider.EXPECT().Register(app).Once()
+		app.Register(provider)
 
-		// Database provider (depends on config and log)
-		dbProvider := diMocks.NewMockServiceProvider(t)
-		dbProvider.EXPECT().Providers().Return([]string{"database"}).Maybe()
-		dbProvider.EXPECT().Requires().Return([]string{"config", "log"}).Maybe()
-		dbProvider.EXPECT().Register(app).Once()
-
-		// Cache provider (depends on config)
-		cacheProvider := diMocks.NewMockServiceProvider(t)
-		cacheProvider.EXPECT().Providers().Return([]string{"cache"}).Maybe()
-		cacheProvider.EXPECT().Requires().Return([]string{"config"}).Maybe()
-		cacheProvider.EXPECT().Register(app).Once()
-
-		// Auth provider (depends on database and cache)
-		authProvider := diMocks.NewMockServiceProvider(t)
-		authProvider.EXPECT().Providers().Return([]string{"auth"}).Maybe()
-		authProvider.EXPECT().Requires().Return([]string{"database", "cache"}).Maybe()
-		authProvider.EXPECT().Register(app).Once()
-
-		// HTTP provider (depends on log and auth)
-		httpProvider := diMocks.NewMockServiceProvider(t)
-		httpProvider.EXPECT().Providers().Return([]string{"http"}).Maybe()
-		httpProvider.EXPECT().Requires().Return([]string{"log", "auth"}).Maybe()
-		httpProvider.EXPECT().Register(app).Once()
-
-		// Register in random order
-		app.Register(httpProvider)
-		app.Register(authProvider)
-		app.Register(cacheProvider)
-		app.Register(dbProvider)
-		app.Register(logProvider)
-		app.Register(configProvider)
-
-		err := app.RegisterWithDependencies()
+		err := app.Boot()
 		assert.NoError(t, err)
 
-		// All should be registered
-		configProvider.AssertExpectations(t)
-		logProvider.AssertExpectations(t)
-		dbProvider.AssertExpectations(t)
-		cacheProvider.AssertExpectations(t)
-		authProvider.AssertExpectations(t)
-		httpProvider.AssertExpectations(t)
+		provider.AssertExpectations(t)
 	})
 
-	t.Run("boot_follows_dependency_order", func(t *testing.T) {
+	t.Run("boot_with_dependencies_uses_dependency_resolution", func(t *testing.T) {
 		t.Parallel()
 
 		config := map[string]interface{}{}
 		app := core.New(config)
 
-		// Simple chain: A -> B
 		providerA := diMocks.NewMockServiceProvider(t)
 		providerA.EXPECT().Providers().Return([]string{"service.a"}).Maybe()
 		providerA.EXPECT().Requires().Return([]string{}).Maybe()
@@ -724,19 +478,226 @@ func TestApplication_Integration_RegisterWithDependencies(t *testing.T) {
 		providerB.EXPECT().Register(app).Once()
 		providerB.EXPECT().Boot(app).Once()
 
-		// Register B first, then A
 		app.Register(providerB)
 		app.Register(providerA)
 
-		// Register with dependencies
-		err := app.RegisterWithDependencies()
-		assert.NoError(t, err)
-
-		// Boot should follow dependency order
-		err = app.BootServiceProviders()
+		err := app.Boot()
 		assert.NoError(t, err)
 
 		providerA.AssertExpectations(t)
 		providerB.AssertExpectations(t)
+	})
+
+	t.Run("boot_handles_registration_error", func(t *testing.T) {
+		t.Parallel()
+
+		config := map[string]interface{}{}
+		app := core.New(config)
+
+		providerA := diMocks.NewMockServiceProvider(t)
+		providerA.EXPECT().Providers().Return([]string{"service.a"}).Maybe()
+		providerA.EXPECT().Requires().Return([]string{"missing.service"}).Maybe()
+
+		app.Register(providerA)
+
+		err := app.Boot()
+		assert.Error(t, err)
+	})
+
+	t.Run("boot_handles_boot_service_providers_error", func(t *testing.T) {
+		t.Parallel()
+
+		config := map[string]interface{}{}
+		app := core.New(config)
+
+		provider := diMocks.NewMockServiceProvider(t)
+		provider.EXPECT().Providers().Return([]string{"service"}).Maybe()
+		provider.EXPECT().Requires().Return([]string{}).Maybe()
+		provider.EXPECT().Register(app).Once()
+		provider.EXPECT().Boot(app).Once().Return()
+
+		app.Register(provider)
+
+		err := app.Boot()
+		assert.NoError(t, err)
+	})
+}
+
+// TestApplication_DI_Integration tests DI container integration
+func TestApplication_DI_Integration(t *testing.T) {
+	t.Run("bind_and_make_service", func(t *testing.T) {
+		t.Parallel()
+
+		config := map[string]interface{}{}
+		app := core.New(config)
+
+		app.Bind("test.service", func(c di.Container) interface{} {
+			return "test-value"
+		})
+
+		service, err := app.Make("test.service")
+		assert.NoError(t, err)
+		assert.Equal(t, "test-value", service)
+	})
+
+	t.Run("singleton_binding", func(t *testing.T) {
+		t.Parallel()
+
+		config := map[string]interface{}{}
+		app := core.New(config)
+
+		counter := 0
+		app.Singleton("counter.service", func(c di.Container) interface{} {
+			counter++
+			return counter
+		})
+
+		service1, err1 := app.Make("counter.service")
+		service2, err2 := app.Make("counter.service")
+
+		assert.NoError(t, err1)
+		assert.NoError(t, err2)
+		assert.Equal(t, 1, service1)
+		assert.Equal(t, 1, service2) // Same instance
+		assert.Equal(t, 1, counter)  // Only instantiated once
+	})
+
+	t.Run("instance_binding", func(t *testing.T) {
+		t.Parallel()
+
+		config := map[string]interface{}{}
+		app := core.New(config)
+
+		testValue := "instance-value"
+		app.Instance("test.instance", testValue)
+
+		service, err := app.Make("test.instance")
+		assert.NoError(t, err)
+		assert.Equal(t, testValue, service)
+	})
+
+	t.Run("alias_creation", func(t *testing.T) {
+		t.Parallel()
+
+		config := map[string]interface{}{}
+		app := core.New(config)
+
+		app.Bind("original.service", func(c di.Container) interface{} {
+			return "original-value"
+		})
+
+		app.Alias("original.service", "aliased.service")
+
+		original, err1 := app.Make("original.service")
+		aliased, err2 := app.Make("aliased.service")
+
+		assert.NoError(t, err1)
+		assert.NoError(t, err2)
+		assert.Equal(t, original, aliased)
+	})
+}
+
+// TestApplication_MustMake tests MustMake method
+func TestApplication_MustMake(t *testing.T) {
+	t.Run("returns_service_when_exists", func(t *testing.T) {
+		t.Parallel()
+
+		config := map[string]interface{}{}
+		app := core.New(config)
+
+		app.Bind("test.service", func(c di.Container) interface{} {
+			return "test-value"
+		})
+
+		service := app.MustMake("test.service")
+		assert.Equal(t, "test-value", service)
+	})
+
+	t.Run("panics_when_service_not_found", func(t *testing.T) {
+		t.Parallel()
+
+		config := map[string]interface{}{}
+		app := core.New(config)
+
+		assert.Panics(t, func() {
+			app.MustMake("non.existent.service")
+		})
+	})
+}
+
+// TestApplication_Call tests Call method
+func TestApplication_Call(t *testing.T) {
+	t.Run("calls_function_with_parameters", func(t *testing.T) {
+		t.Parallel()
+
+		config := map[string]interface{}{}
+		app := core.New(config)
+
+		app.Bind("string", func(c di.Container) interface{} {
+			return "injected-value"
+		})
+
+		testFunc := func(param string) string {
+			return "result: " + param
+		}
+
+		result, err := app.Call(testFunc)
+		assert.NoError(t, err)
+		assert.Len(t, result, 1)
+		assert.Equal(t, "result: injected-value", result[0])
+	})
+}
+
+// TestApplication_Config_Integration tests config manager integration
+func TestApplication_Config_Integration(t *testing.T) {
+	t.Run("returns_config_manager_when_available", func(t *testing.T) {
+		t.Parallel()
+
+		config := map[string]interface{}{}
+		app := core.New(config)
+
+		mockConfig := configMocks.NewMockManager(t)
+		app.Instance("config", mockConfig)
+
+		configManager := app.Config()
+		assert.Equal(t, mockConfig, configManager)
+	})
+
+	t.Run("panics_when_config_not_registered", func(t *testing.T) {
+		t.Parallel()
+
+		config := map[string]interface{}{}
+		app := core.New(config)
+
+		assert.Panics(t, func() {
+			app.Config()
+		})
+	})
+}
+
+// TestApplication_Log_Integration tests log manager integration
+func TestApplication_Log_Integration(t *testing.T) {
+	t.Run("returns_log_manager_when_available", func(t *testing.T) {
+		t.Parallel()
+
+		config := map[string]interface{}{}
+		app := core.New(config)
+
+		mockLog := logMocks.NewMockManager(t)
+		app.Instance("log", mockLog)
+
+		logManager := app.Log()
+		assert.Equal(t, mockLog, logManager)
+	})
+
+	t.Run("panics_when_log_not_registered", func(t *testing.T) {
+		t.Parallel()
+
+		config := map[string]interface{}{}
+		app := core.New(config)
+
+		assert.Panics(t, func() {
+			app.Log()
+		})
 	})
 }

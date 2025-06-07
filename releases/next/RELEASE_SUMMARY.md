@@ -1,4 +1,4 @@
-# v0.1.1 Release Summary
+# v0.1.2 Release Summary
 
 ## Quick Overview
 One-line summary of what this release brings.
@@ -25,4 +25,4 @@ What to expect in the next release cycle.
 ---
 **Full Release Notes**: [RELEASE_NOTES.md](./RELEASE_NOTES.md)  
 **Migration Guide**: [MIGRATION.md](./MIGRATION.md)  
-**Release Date**: 2025-06-05
+**Release Date**: 2025-06-07

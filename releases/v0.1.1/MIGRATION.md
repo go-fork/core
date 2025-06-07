@@ -1,28 +1,43 @@
-# Migration Guide - v0.1.2
+# Migration Guide - v0.1.1
 
 ## Overview
-This guide helps you migrate from the previous version to v0.1.2.
+Hướng dẫn này giúp bạn nâng cấp từ phiên bản trước lên v0.1.1. Đây là bản cập nhật nhỏ không có breaking changes.
 
 ## Prerequisites
 - Go 1.23 or later
-- Previous version installed
+- go.fork.vn/core v0.1.0 installed
 
 ## Quick Migration Checklist
-- [ ] Update import statements (if changed)
-- [ ] Update function calls (if signatures changed)
-- [ ] Update configuration (if format changed)
-- [ ] Run tests to ensure compatibility
-- [ ] Update documentation references
+- [x] No import statement changes required
+- [x] No function signature changes
+- [x] No configuration format changes
+- [x] All existing code remains compatible
+- [ ] Update dependency to get latest fixes
 
 ## Breaking Changes
+**Không có breaking changes** trong bản phát hành này.
 
-### API Changes
-#### Changed Functions
+## Dependencies Update
+Chỉ cần cập nhật dependency trong go.mod:
+
+```bash
+go get go.fork.vn/core@v0.1.1
+go mod tidy
+```
+
+## What Changed
+### Internal Improvements
+- Upgraded internal logging dependency for better stability
+- Enhanced test coverage for better code quality
+- Fixed potential logging issues
+
+### No Code Changes Required
+Tất cả existing code sẽ hoạt động mà không cần thay đổi gì.
 ```go
 // Old way (previous version)
 oldFunction(param1, param2)
 
-// New way (v0.1.2)
+// New way (v0.1.1)
 newFunction(param1, param2, newParam)
 ```
 
@@ -63,7 +78,7 @@ new_option: false
 
 ### Step 1: Update Dependencies
 ```bash
-go get go.fork.vn/core@v0.1.2
+go get go.fork.vn/core@v0.1.1
 go mod tidy
 ```
 
@@ -105,7 +120,7 @@ go test ./...
 **Solution**: Cast the value or update variable type
 
 ## Getting Help
-- Check the [documentation](https://pkg.go.dev/go.fork.vn/core@v0.1.2)
+- Check the [documentation](https://pkg.go.dev/go.fork.vn/core@v0.1.1)
 - Search [existing issues](https://github.com/go-fork/core/issues)
 - Create a [new issue](https://github.com/go-fork/core/issues/new) if needed
 
