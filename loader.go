@@ -53,12 +53,12 @@ func (l *moduleLoader) BootstrapApplication() error {
 		return err
 	}
 
-	// Step 2: Register all service providers with dependency checking
+	// Step 2: Register ALL providers với dependency checking
 	if err := l.app.RegisterWithDependencies(); err != nil {
 		return err
 	}
 
-	// Step 3: Boot all service providers
+	// Step 4: Boot all providers
 	if err := l.app.BootServiceProviders(); err != nil {
 		return err
 	}
@@ -72,31 +72,25 @@ func (l *moduleLoader) BootstrapApplication() error {
 //
 // Core providers bao gồm:
 //   - config.ServiceProvider: Configuration management
-//   - log.ServiceProvider: Logging functionality
+//   - log service: Logging functionality với proper config binding
 //
 // Trả về:
 //   - error: Lỗi nếu đăng ký core providers thất bại
 func (l *moduleLoader) RegisterCoreProviders() error {
-	// Register config provider
-	l.app.Register(config.NewServiceProvider())
+	// 1. Register config provider vào list
+	configProvider := config.NewServiceProvider()
+	// l.app.Register(configProvider)
 
-	// Register the config provider immediately so it becomes available
-	if err := l.app.RegisterServiceProviders(); err != nil {
-		return err
-	}
+	// 2. Register ngay config provider để có thể apply config
+	configProvider.Register(l.app)
 
-	// Apply config after registering config provider
+	// 3. Apply config sau khi config provider đã register
 	if err := l.applyConfig(); err != nil {
 		return err
 	}
 
-	// Register log provider
+	// 4. Register log provider vào list
 	l.app.Register(log.NewServiceProvider())
-
-	// Register the log provider immediately so it becomes available
-	if err := l.app.RegisterServiceProviders(); err != nil {
-		return err
-	}
 
 	return nil
 }
@@ -127,20 +121,25 @@ func (l *moduleLoader) applyConfig() error {
 	// Apply config settings safely
 	if file, ok := cfg["file"].(string); ok {
 		configManager.SetConfigFile(file)
-	}
-	if name, ok := cfg["name"].(string); ok {
-		configManager.SetConfigName(name)
-	}
-	if path, ok := cfg["path"].(string); ok {
-		configManager.AddConfigPath(path)
-	}
-	if fileType, ok := cfg["type"].(string); ok {
-		configManager.SetConfigType(fileType)
-	}
-
-	// Read config with error handling
-	if err := configManager.ReadInConfig(); err != nil {
-		return fmt.Errorf("config read failed: %w", err)
+		// Read config with error handling
+		if err := configManager.ReadInConfig(); err != nil {
+			return fmt.Errorf("config read failed: %w", err)
+		}
+		return nil
+	} else {
+		if name, ok := cfg["name"].(string); ok {
+			configManager.SetConfigName(name)
+		}
+		if path, ok := cfg["path"].(string); ok {
+			configManager.AddConfigPath(path)
+		}
+		if fileType, ok := cfg["type"].(string); ok {
+			configManager.SetConfigType(fileType)
+		}
+		// Read config with error handling
+		if err := configManager.ReadInConfig(); err != nil {
+			return fmt.Errorf("config read failed: %w", err)
+		}
 	}
 
 	return nil
