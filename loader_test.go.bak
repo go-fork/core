@@ -338,7 +338,7 @@ func TestModuleLoader_RegisterCoreProviders_Integration(t *testing.T) {
 		if testing.Short() {
 			t.Skip("Skipping integration test in short mode due to log v0.1.6 bug")
 		}
-		
+
 		t.Parallel()
 
 		// Setup test environment for log v0.1.4
@@ -436,7 +436,7 @@ func TestModuleLoader_LoadModule_Integration(t *testing.T) {
 		if testing.Short() {
 			t.Skip("Skipping integration test in short mode due to log v0.1.6 bug")
 		}
-		
+
 		t.Parallel()
 
 		// Setup test environment for log v0.1.4

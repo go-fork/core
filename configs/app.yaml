@@ -1,0 +1,24 @@
+app:
+  name: "Fork Application"
+  version: "1.0.0"
+  environment: "development"  # development, production, testing
+  debug: true
+  timezone: "Asia/Ho_Chi_Minh"
+
+log:
+  level: 1  # debug, info, warning, error, fatal
+  
+  console:
+    enabled: true
+    colored: true
+  
+  file:
+    enabled: true
+    path: "storage/logs/app.log"
+    max_size: 10485760  # 10MB in bytes (0 for unlimited)
+  
+  stack:
+    enabled: true
+    handlers:
+      console: true
+      file: true
